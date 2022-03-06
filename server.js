@@ -1,17 +1,19 @@
 const express = require('express');
 const { default: mongoose } = require('mongoose');
-// const cors = require('cors');
+const router = require('./routers/aircraftsRouter');
+//const cors = require('cors');
 ATLAS_URI = "mongodb+srv://user1:user1@oasiscluster.wukey.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
 const app = express();
 
-// app.use(cors());
-// app.use(express.json());
+//app.use(cors());
+app.use(express.json());
+app.use('', router)
 
 const port = process.env.PORT || 5000;
 const uri = ATLAS_URI;
-mongoose.connect(uri, { 
-    useNewUrlParser: true, 
+mongoose.connect(uri, {
+    useNewUrlParser: true,
     //useCreateIndex: true 
 });
 const connection = mongoose.connection;
