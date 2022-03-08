@@ -54,7 +54,6 @@ router.post('/aircrafts/legs/add', async (req, res) => {
             aircraft,
             { $push: { legs: leg } },
         );
-        console.log(leg.fh, leg.fc)
         await Aircraft.updateOne(
             { msn: msn },
             {
