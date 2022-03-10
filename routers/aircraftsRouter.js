@@ -51,27 +51,66 @@ router.get('/aircrafts/aircraft/legs/last', async (req, res) => {
 
 router.get('/aircrafts/aircraft/legs', async (req, res) => {
     try {
-        const { msn, from = '2022-03-02', to = '2022-03-05' } = req.query
+        const { msn, from = '2022-03-02', to = '2022-03-05', selectedPage } = req.query
         const aircraft = await Aircraft.findOne({ msn: msn }).exec();
 
-        const legs = aircraft.legs.filter(function (leg) {
-            const startDate = new Date(from).getTime()
-            const endDate = new Date(to).getTime()
-            const depDate = new Date(leg.depDate).getTime()
-            return (depDate <= endDate) && (depDate >= startDate)
-        });
+        if (!from || !to) {
+            const legs = aircraft.legs.slice(0, 11)
+            const totalPages = (legs.length % 10) !== 0
+                ? Math.floor(legs.length / 10) + 1
+                : Math.floor(legs.length / 10)
 
-        const totalPages = (legs.length % 10) !== 0
-            ? Math.floor(legs.length / 10) + 1
-            : Math.floor(legs.length / 10)
+            res.json({
+                legs: legs,
+                totalPages: totalPages
+            })
+            console.log("!from and !to")
 
-res.json({
-    legs: aircraft.legs,
-    totalPages: totalPages
-})
+        } else if (!selectedPage) {
+            const legs = aircraft.legs.filter(function (leg) {
+                const startDate = new Date(from).getTime()
+                const endDate = new Date(to).getTime()
+                const depDate = new Date(leg.depDate).getTime()
+                return (depDate <= endDate) && (depDate >= startDate)
+            });
+
+            const totalPages = (legs.length % 10) !== 0
+                ? Math.floor(legs.length / 10) + 1
+                : Math.floor(legs.length / 10)
+
+            const legsPortion = legs.slice(0, 11)
+
+            res.json({
+                legs: legsPortion,
+                totalPages: totalPages
+            })
+            console.log("!selectedPage")
+        } else {
+            const legs = aircraft.legs.filter(function (leg) {
+                const startDate = new Date(from).getTime()
+                const endDate = new Date(to).getTime()
+                const depDate = new Date(leg.depDate).getTime()
+                return (depDate <= endDate) && (depDate >= startDate)
+            });
+
+            const startLeg = (selectedPage - 1) * 10
+            const endLeg = startLeg + 10
+            const legsPortion = legs.slice(startLeg, endLeg)
+
+            const totalPages = (legs.length % 10) !== 0
+                ? Math.floor(legs.length / 10) + 1
+                : Math.floor(legs.length / 10)
+
+            res.json({
+                legs: legsPortion,
+                totalPages: totalPages
+            })
+            console.log('allll')
+        }
+
     } catch (error) {
-    res.status(500).json(error)
-}
+        res.status(500).json(error)
+    }
 })
 
 router.post('/aircrafts/legs/add', async (req, res) => {
