@@ -78,11 +78,13 @@ router.get('/aircrafts/aircraft/legs', async (req, res) => {
                 ? Math.floor(legs.length / 10) + 1
                 : Math.floor(legs.length / 10)
 
-            const legsPortion = legs.slice(0, 11)
+            const legsPortion = legs.slice(0, 10)
 
             res.json({
                 legs: legsPortion,
-                totalPages: totalPages
+                totalPages: totalPages,
+                selectedPage: 1
+
             })
             console.log("!selectedPage")
         } else {
@@ -103,7 +105,8 @@ router.get('/aircrafts/aircraft/legs', async (req, res) => {
 
             res.json({
                 legs: legsPortion,
-                totalPages: totalPages
+                totalPages: totalPages,
+                selectedPage: selectedPage
             })
             console.log('allll')
         }
