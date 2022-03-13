@@ -142,6 +142,21 @@ router.post('/aircrafts/legs/add', async (req, res) => {
         res.status(500).json(error)
     }
 })
+// DELETE LEG
+
+router.post('/aircrafts/legs/del', async (req, res) => {
+    try {
+        const { msn, legId } = req.body
+        //const aircraft = await Aircraft.create({ msn, FH, FC, legs })
+        console.log(msn, legId)
+        //res.json(aircraft)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+})
+
+
+
 
 // ADD AIRCRAFT
 router.post('/aircrafts/add', async (req, res) => {
@@ -154,5 +169,8 @@ router.post('/aircrafts/add', async (req, res) => {
         res.status(500).json(error)
     }
 })
+
+
+
 
 module.exports = router
