@@ -4,8 +4,11 @@ const aircraftSchema = new mongoose.Schema({
     msn: { type: Number, required: true },
     FH: { type: String, required: true },
     FC: { type: String, required: true },
+    initFH: { type: String, required: true },
+    initFC: { type: String, required: true },
     legs: [
         {
+            id: { type: String, required: true },
             depDate: { type: String, required: true },
             flightNumber: { type: String, required: true },
             from: { type: String, required: true },
