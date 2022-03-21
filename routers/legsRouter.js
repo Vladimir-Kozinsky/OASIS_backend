@@ -6,47 +6,49 @@ const req = require('express/lib/request')
 const legsRouter = new Router()
 
 
-const recalculate_FC = async (msn) => {
+const recalculate_FH = async (initLegs, initFH, initFC) => {
+    let legs = initLegs
     const time_to_mm = (time) => {
-        const arr = time.split(':')
-        const mm = (+arr[0] * 60) + (+arr[1])
-        return mm
-    }
-
-    const calculateLegsFH = (legPos, legs, initFH) => { // прлсчет с инитиал до legPos
-
-        for (let pos = 0; pos < legPos; pos++) {
-            const leg = legs[pos];
-            let total_mm = time_to_mm(initFH) + time_to_mm(leg.flightTime)
-            for (let i = 0; i < pos; i++) {
-                total_mm += time_to_mm(legs[i].flightTime)
-            }
-            leg.fh = total_mm
+        if (time) {
+            const arr = time.split(':')
+            const mm = (+arr[0] * 60) + (+arr[1])
+            return mm
+        } else {
+            return console.log('time did not find')
         }
-        console.log(legs)
+    }
+    const mm_to_time = (mm) => {
+        const HH = Math.floor(mm / 60)
+        const MM = mm % 60
+        return `${HH}:${MM}`
     }
 
-    // calculateLegsFH(5, [
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    //     { flightTime: '10:05' },
-    // ], '10:10')
+    const calculateLegsFH = (legPos, legs, initFH) => { // подсчет с инитиал до legPos
+        let newLegs = legs
+        let total_mm = time_to_mm(initFH)
+        for (let pos = 0; pos <= legPos; pos++) {
+            const leg = newLegs[pos];
+            total_mm += time_to_mm(leg.flightTime) // init + текущий лег
+        }
+        return total_mm
+    }
 
-    const aircraft = await Aircraft.findOne({ msn: msn }).exec();
-    let legs = aircraft.legs
+    const calculateLegsFC = (legPos, legs, initFC) => {
+        let total_fc = +initFC
+        for (let pos = 0; pos <= legPos; pos++) {
+            const leg = legs[pos];
+            total_fc += 1
+        }
+        return total_fc
+    }
+
     for (let pos = 0; pos < legs.length; pos++) {
         const leg = legs[pos];
-        leg.flightTime = calculateLegsFH(0, aircraft.legs, aircraft.initFH)
+        leg.fh = mm_to_time(calculateLegsFH(pos, legs, initFH))
+        leg.fc = calculateLegsFC(pos, legs, initFC)
     }
     return legs
 }
-
-//console.log(recalculate_FC(24985))
 
 
 legsRouter.use(cors({
@@ -170,13 +172,12 @@ legsRouter.post('/aircrafts/legs/del', async (req, res) => {
         let legs = aircraft.legs
         let legIndex = legs.findIndex((leg) => leg.id === legId)
         legs.splice(legIndex, 1)
-
+        const updatedLegs = recalculate_FH(legs, aircraft.initFH, aircraft.initFC)
+        console.log(updatedLegs)
         await Aircraft.updateOne(
             { msn: msn },
-            { legs: legs }, { upsert: true });
-
-
-        //res.json(aircraft)
+            { legs: updatedLegs }, { upsert: true });
+        res.json(aircraft)
     } catch (error) {
         res.status(500).json(error)
     }
