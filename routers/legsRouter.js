@@ -46,7 +46,7 @@ const recalculate_FC = async (msn) => {
     return legs
 }
 
-console.log(recalculate_FC(24985))
+//console.log(recalculate_FC(24985))
 
 
 legsRouter.use(cors({
