@@ -172,11 +172,16 @@ legsRouter.post('/aircrafts/legs/del', async (req, res) => {
         let legs = aircraft.legs
         let legIndex = legs.findIndex((leg) => leg.id === legId)
         legs.splice(legIndex, 1)
-        const updatedLegs = recalculate_FH(legs, aircraft.initFH, aircraft.initFC)
-        console.log(updatedLegs)
+        const updatedLegs = await recalculate_FH(legs, aircraft.initFH, aircraft.initFC)
+        const updatedFH = updatedLegs[updatedLegs.length - 1].fh
+        const updatedFC = updatedLegs[updatedLegs.length - 1].fc
         await Aircraft.updateOne(
             { msn: msn },
-            { legs: updatedLegs }, { upsert: true });
+            {
+                legs: updatedLegs,
+                FH: updatedFH,
+                FC: updatedFC
+            }, { upsert: true });
         res.json(aircraft)
     } catch (error) {
         res.status(500).json(error)
