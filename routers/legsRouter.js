@@ -182,7 +182,38 @@ legsRouter.post('/aircrafts/legs/del', async (req, res) => {
                 FH: updatedFH,
                 FC: updatedFC
             }, { upsert: true });
-        res.json(aircraft)
+        res.json({
+            resultCode: 1,
+            message: "Leg succesfully deleted",
+            legs: aircraft.legs
+        })
+    } catch (error) {
+        res.status(500).json(error)
+    }
+})
+
+// UPDATE LEG
+
+legsRouter.post('/aircrafts/legs/update', async (req, res) => {
+    try {
+        const { msn, leg } = req.body
+        const aircraft = await Aircraft.findOne({ msn: msn }).exec();
+        let legs = aircraft.legs
+        legs.forEach(function (item, i) { if (item.id === leg.id) legs[i] = leg });
+        const updatedLegs = await recalculate_FH(legs, aircraft.initFH, aircraft.initFC)
+        const updatedFH = updatedLegs[updatedLegs.length - 1].fh
+        const updatedFC = updatedLegs[updatedLegs.length - 1].fc
+        await Aircraft.updateOne(
+            { msn: msn },
+            {
+                legs: updatedLegs,
+                FH: updatedFH,
+                FC: updatedFC
+            }, { upsert: true });
+        res.json({
+            resultCode: 1,
+            message: "Leg succesfully updated",
+        })
     } catch (error) {
         res.status(500).json(error)
     }
