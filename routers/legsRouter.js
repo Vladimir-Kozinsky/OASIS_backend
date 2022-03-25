@@ -107,6 +107,20 @@ legsRouter.get('/aircrafts/aircraft/legs', async (req, res) => {
 
             })
             console.log("!selectedPage")
+        } else if (selectedPage === 'all') {
+            const legs = aircraft.legs.filter(function (leg) {
+                const startDate = new Date(from).getTime()
+                const endDate = new Date(to).getTime()
+                const depDate = new Date(leg.depDate).getTime()
+                return (depDate <= endDate) && (depDate >= startDate)
+            })
+
+            res.json({
+                legs: legs,
+                totalPages: 1,
+                selectedPage: 1
+            })
+
         } else {
             const legs = aircraft.legs.filter(function (leg) {
                 const startDate = new Date(from).getTime()
