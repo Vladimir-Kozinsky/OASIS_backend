@@ -12,12 +12,26 @@ router.use(cors({
 
 // ADD USER
 
-router.post('/user', async (req, res) => {
+router.post('/user/signup', async (req, res) => {
     try {
-        const { name, password, isRemember } = req.body
-        const userId = name
-        const user = await User.create({ userId, name, password, isRemember })
-        res.json(user)
+        const { login, firstName, lastName, position, password, isRemember } = req.body.userInfo
+        const userId = firstName
+        const isUser = await User.findOne({ login: login }).exec();
+        if (!isUser) {
+            const user = await User.create({ userId, login, firstName, lastName, position, password, isRemember })
+            res.json({
+                resultCode: 1,
+                message: `User ${user.firstName} ${user.lastName} successfully created`,
+            })
+        } else {
+            res.json({
+                resultCode: 2,
+                message: `User ${isUser.login} already exists`,
+            }) 
+        }
+
+
+
     } catch (error) {
         res.status(500).json(error)
     }
@@ -31,7 +45,7 @@ router.post('/user/auth', async (req, res) => {
             res.json({
                 resultCode: 1,
                 message: "User successfully logged",
-                user: user
+                userInfo: user
             })
         } else {
             res.json({
